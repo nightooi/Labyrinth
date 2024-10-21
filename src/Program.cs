@@ -27,8 +27,8 @@ using System.Xml.Linq;
 /// </summary>
 /// 
 var builder = new HostApplicationBuilder();
-
-builder.Services.AddSingleton<IParameterizedFactory<ICoordinates>, ParamFactory<ICoordinates>>(
+builder.Services.AddScoped<ILine, Line>();
+builder.Services.AddTransient<IParameterizedFactory<ICoordinates>, ParamFactory<ICoordinates>>(
     (x) => {
         return new ParamFactory<ICoordinates>((items) =>
         {
@@ -50,7 +50,6 @@ builder.Services.AddSingleton<ISimpleFactory<Characters>, SimpleFactory<Characte
     });
 });
 
-builder.Services.AddSingleton<testObject>();
 
 builder.Services.AddScoped<ICoordinates, WritingCoordinates>();
 var serviceHost = builder.Build();
@@ -90,7 +89,6 @@ public class Characters {
     public char Space   { get; init; }
     public char NewLine { get; init; }
 }
-
 public interface ISimpleFactory<T>
 {
     public T Create();

@@ -33,6 +33,8 @@ using System.Text;
 namespace Labyrinth.Composition;
 public class PathWriter : IPathWriter, ICloneable
 {
+
+    #region Constructors
     public PathWriter(PathWriter writer)
     {
         for (int i = 0; i < writer.LastX; i++) AdjustPadding(Padding.Add);
@@ -40,19 +42,23 @@ public class PathWriter : IPathWriter, ICloneable
         this.PreviousInsert = writer.PreviousInsert;
         this._chars = writer._chars;
     }
-    private char PreviousInsert { get; set; }
-    private GeneralPadding _generalPadding { get; set; }
-    public PathWriter(ISimpleFactory<GeneralPadding> padding,
+    public PathWriter(
+        ISimpleFactory<GeneralPadding> padding,
         ISimpleFactory<Characters> car)
+        //IParameterizedFactory<ILineBank> LineBank)
     {
         _generalPadding = padding.Create();
         _chars = car.Create();
     }
+    #endregion
+    private ILineBank LineBank { get; init; }
     private int MaxY { get 
         {
             return _maxY;
         }
     }
+    private char PreviousInsert { get; set; }
+    private GeneralPadding _generalPadding { get; set; }
     private StringBuilder _currentPadding = new StringBuilder();
     private IParameterizedFactory<IInsertion> _insertionFactory { get; init; }
     
@@ -89,9 +95,13 @@ public class PathWriter : IPathWriter, ICloneable
         }
         else if(PreviousInsert == _chars.Left)
         {
+
+            // the test is skewed cus it's
+            // adding even though it doesnt need to, on the last line
+            // InsertLeft runs to the end, meaning the next character
+
             AdjustPadding(Padding.Add);
         }
-
         for(int i = 0; i < len; i++)
         {
             if(LastY+1 <= MaxY){
@@ -168,6 +178,7 @@ public class PathWriter : IPathWriter, ICloneable
     }
     public StringBuilder InsertLeft(int len, StringBuilder field)
     {
+
         var write = field;
         int CaretPos  = GetLocalCaretPos(write);
         Console.WriteLine("CaretPos in Left is:::: {0}, ",
@@ -186,14 +197,16 @@ public class PathWriter : IPathWriter, ICloneable
                     case 'R':
                         if (i > 0 && write[i -1] == ' ')
                         {
+                           PreviousInsert = _chars.Left;
                            write[i] = _chars.Left;
                         }
                         else
                         {
-                            write.Remove(i, 1);
+                                write.Replace(write[i], ' ', i, 1);
                         }
                         break;
                     case 'L':
+                            PreviousInsert = _chars.Left;
                             write[i] = _chars.Left;
                         break;
                     case ' ':
@@ -204,16 +217,19 @@ public class PathWriter : IPathWriter, ICloneable
                     case '\r':
                             return write;
                     case 'D':
+
+                            PreviousInsert = _chars.Left;
                             write[i] = _chars.Left;
                         break;
                     case 'U':
+
+                            PreviousInsert = _chars.Left;
                             write[i] = _chars.Left;
                         break;
                 }
             }
                 return write;
         });
-        PreviousInsert = _chars.Left;
         return Traverse();
     }
     public StringBuilder InsertRight(int len, StringBuilder field)

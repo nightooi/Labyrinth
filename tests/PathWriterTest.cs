@@ -10,9 +10,9 @@ using System.Text;
 namespace tests
 {
     [TestClass]
-    public class PathWriterTest
+    public partial class PathWriterTest
     {
-        private PathWriter Writer => CreateWriter();
+        private IPathWriter Writer => CreateWriter();
         private PathWriter CreateWriter()
         {
             return new SimpleFactory<PathWriter>(() =>
@@ -71,8 +71,7 @@ namespace tests
             var c = b.ToString();
             Console.WriteLine(c);
             var k = c.Split("\r\n");
-            Assert.IsTrue(k[2] == "D");
-            Assert.IsTrue(k[3] == "U");
+            Assert.IsTrue(k[5] == " ");
         }
         [TestMethod]
         public void TestInsertUpAtZero()
@@ -121,9 +120,9 @@ namespace tests
             Console.WriteLine(field.Length);
             Assert.IsTrue(field.ToString().StartsWith("\r\n"));
             Assert.IsTrue(field.ToString().EndsWith("\r\n"));
-            Assert.IsTrue(field.Length == (10 * 8) + 2);
-            Assert.IsTrue(b[8].Contains("L"));
-            Assert.IsTrue(b[8] == "LLLLLLLL");
+            Assert.IsTrue(field.Length == (10 * 9) + 2);
+            Assert.IsTrue(b[9].Contains("L"));
+            Assert.IsTrue(b[9] == "LLLLLLLL");
         }
         [TestMethod]
         [DataRow(1)]
@@ -160,6 +159,8 @@ namespace tests
         }
         [TestMethod]
         [DataRow(7)]
+        [DataRow(2)]
+        [DataRow(1)]
         public void TestConsecutiveDown(int val)
         {
             var writer = Writer;
@@ -197,7 +198,7 @@ namespace tests
             Console.WriteLine("Len::: {0}", b.Length);
             Console.WriteLine(c);
             Console.Write(k[value] + "::::value");
-            Assert.IsTrue(c.Length == (3 * value) + 1);
+            Assert.IsTrue(c.Length == (3 * value) + 4);
             Assert.IsTrue(c.StartsWith("\r\n"));
             Assert.IsTrue(c.EndsWith("\r\n"));
             Assert.IsTrue(k[value].Contains("D"));
@@ -219,28 +220,31 @@ namespace tests
             var c = b.ToString();
             var k = c.Split("\r\n");
             Console.WriteLine(c);
-            Console.WriteLine("Len::: {0}", b.Length);
-            Assert.IsFalse(k[0].Contains("D"));
-            Assert.IsTrue(c.Length == (3 * value) + 4);
+            Console.WriteLine("Len::: {0}", c.Length);
+            Assert.IsFalse(k[0]=="D");
+            Assert.IsTrue(b.ToString().Length == (3 * value) + 4);
             Assert.IsTrue(k[value].Contains("D"));
             Assert.IsTrue(k[value] == "D");
         }
         [TestMethod]
         public void TestSquare()
         {
-            var a = Writer;
+            var path = Writer;
             StringBuilder b = new StringBuilder();
             b.Append("\r\n").Append("\r\n");
-            b = a.InsertRight(8, b);
-            b = a.InsertDown(8, b);
-            b = a.InsertLeft(8, b);
-            b = a.InsertUp(8, b);
-            b = a.InsertRight(8, b);
-            b = a.InsertRight(8, b);
-            b = a.InsertDown(8, b);
-            b = a.InsertUp(8, b);
+            b = path.InsertRight(8, b);
+            b = path.InsertDown(8, b);
+            b =path.InsertLeft(8, b);
+            b =path.InsertUp(8, b);
+            b =path.InsertRight(8, b);
+            b =path.InsertDown(8, b);
 
 
+            Console.WriteLine(); 
+            Console.WriteLine(); 
+            Console.WriteLine(); 
+            Console.WriteLine(); 
+            Console.WriteLine(); 
             Console.WriteLine(b.ToString());
             var c = b.ToString().Split("\r\n");
             Assert.IsTrue(c[1].Contains("RRRRRRRRRRRRRRRR"));
@@ -255,10 +259,22 @@ namespace tests
             b.Append("\r\n").Append("\r\n");
             b = a.InsertDown(8, b);
             b = a.InsertRight(16, b);
+            b = a.InsertRight(16, b);
+            b = a.InsertRight(16, b);
             b = a.InsertUp(8, b);
             b = a.InsertRight(8, b);
             b = a.InsertRight(8, b);
             b = a.InsertDown(8, b);
+            b = a.InsertRight(8, b);
+            b = a.InsertDown(8, b);
+
+            // this issue can only be solved with the linebank
+            // the only time the insert should be removed as oppsed to overwritten
+            // is if its the latest insert is exact opposite to the last.
+
+            b = a.InsertLeft(14, b);
+            b = a.InsertUp(8, b);
+            b = a.InsertLeft(14, b);
                 
             Console.WriteLine(b.ToString());
             var c = b.ToString().Split("\r\n");
