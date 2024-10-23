@@ -33,7 +33,6 @@ using System.Text;
 namespace Labyrinth.Composition;
 public class PathWriter : IPathWriter, ICloneable
 {
-
     #region Constructors
     public PathWriter(PathWriter writer)
     {
@@ -44,30 +43,24 @@ public class PathWriter : IPathWriter, ICloneable
     }
     public PathWriter(
         ISimpleFactory<GeneralPadding> padding,
-        ISimpleFactory<Characters> car)
-        //IParameterizedFactory<ILineBank> LineBank)
+        ISimpleFactory<Characters> car,
+        IParameterizedFactory<ILineBank> LineBank)
     {
         _generalPadding = padding.Create();
         _chars = car.Create();
     }
     #endregion
     private ILineBank LineBank { get; init; }
+    private GeneralPadding _generalPadding { get; set; }
+    private StringBuilder _currentPadding = new StringBuilder();
+    private Characters _chars;
     private int MaxY { get 
         {
             return _maxY;
         }
     }
-    private char PreviousInsert { get; set; }
-    private GeneralPadding _generalPadding { get; set; }
-    private StringBuilder _currentPadding = new StringBuilder();
-    private IParameterizedFactory<IInsertion> _insertionFactory { get; init; }
-    
-    public IInsertion LastInsertion()
-    {
-        return this._insertionFactory.Create(
-            new object[] { this.LastX, this.LastY , this._chars.NewLine });
-    }
     int _lastY = 1;
+    private int _maxY = 0;
     private int LastY
     {
         get { return _lastY; }
@@ -79,10 +72,47 @@ public class PathWriter : IPathWriter, ICloneable
             _lastY = value;
         }
     }
-    private int _maxY = 0;
     private int LastX => _generalPadding.PaddingX.Length 
         + _currentPadding.Length;
-    private Characters _chars;
+    private char PreviousInsert { get; set; }
+    private enum Padding { Remove, Add };
+    #region helpers
+    private void AdjustPadding(Padding pad)
+    {
+        switch (pad)
+        {
+            case Padding.Remove:
+                if(_currentPadding.Length > 0) _currentPadding.Remove(_currentPadding.Length - 1, 1);
+                break;
+            case Padding.Add:
+                _currentPadding.Append(_chars.Space);
+                break;
+        }
+    }
+    private int GetLocalCaretPos(in StringBuilder buffer)
+    {
+        int Start;
+        FindLocalStart(buffer,out Start);
+        return Start + LastX;
+    }
+    private int FindLocalStart(in StringBuilder write, out int Start)
+    {
+        int findY = -1;
+        int LineEnd = -1;
+        int LineStart = -1;
+        for (int i = 0; i < write.Length; i++)
+        {
+            if (write[i] == '\n') findY++;
+            if (findY == LastY-1) LineEnd = i;
+            if (findY == LastY-1 && LineStart < 0) LineStart = i+1;
+        }
+        Start = LineStart;
+        Console.WriteLine("LastY:::" + LastY);
+        Console.WriteLine("LineEnd:::" + LineEnd);
+        Console.WriteLine("LineStart::" + Start);
+        return LineEnd;
+    }
+    #endregion
     public StringBuilder InsertDown(int len, StringBuilder field)
     {
         var f = field;
@@ -135,46 +165,6 @@ public class PathWriter : IPathWriter, ICloneable
         }
         this.PreviousInsert = _chars.Down;
         return f;
-    }
-    private enum Padding { Remove, Add };
-    private void AdjustPadding(Padding pad)
-    {
-        switch (pad)
-        {
-            case Padding.Remove:
-                if(_currentPadding.Length > 0) _currentPadding.Remove(_currentPadding.Length - 1, 1);
-                break;
-            case Padding.Add:
-                _currentPadding.Append(_chars.Space);
-                break;
-        }
-    }
-    private int FindLocalStart(in StringBuilder write, out int Start)
-    {
-        int findY = -1;
-        int LineEnd = -1;
-        int LineStart = -1;
-        for (int i = 0; i < write.Length; i++)
-        {
-            if (write[i] == '\n') findY++;
-            if (findY == LastY-1) LineEnd = i;
-            if (findY == LastY-1 && LineStart < 0) LineStart = i+1;
-        }
-        Start = LineStart;
-        Console.WriteLine("LastY:::" + LastY);
-        Console.WriteLine("LineEnd:::" + LineEnd);
-        Console.WriteLine("LineStart::" + Start);
-        return LineEnd;
-    }
-    private int GetLocalCaretPos(in StringBuilder buffer)
-    {
-        int Start;
-        FindLocalStart(buffer,out Start);
-        return Start + LastX;
-    }
-    public int ShowStartWrite(in StringBuilder buffer)
-    {
-        return GetLocalCaretPos(buffer);
     }
     public StringBuilder InsertLeft(int len, StringBuilder field)
     {
@@ -256,18 +246,6 @@ public class PathWriter : IPathWriter, ICloneable
         }
         PreviousInsert = _chars.Right;
         return write;
-    }
-    public Action Switch(char direction, Action func)
-    {
-        return direction switch
-        {
-            'U'  => func,
-            'D'  => func,
-            'L'  => func,
-            'R'  => func,
-            ' '  => func,
-            '\n' => func
-        };
     }
     public StringBuilder InsertUp(int len, StringBuilder field)
     {

@@ -1,91 +1,47 @@
-﻿using System.Collections;
+﻿using Microsoft.Extensions.Options;
+
+using System.Collections;
 using System.Linq.Expressions;
+using System.Numerics;
 
 namespace Labyrinth.Composition.Interfaces;
 
-public interface ILineBank : IEnumerable<ILine>, IList<ILine>
+public interface ILineBank<T>  where T: ILine
 {
-
+    LinkedList<T> Bank { get; }
+    bool AppendtoLine(T Line, int len, char c);
+    bool AdjustLine(int LineNumber, int len, char c);
+    bool GetLine(int LineNumber, out T? item);
+    bool GetFirst(out T? item);
+    bool GetLast(out T? item);
+    bool GetLastest(out T? item);
 }
 
-public class LineBank : ILineBank
+public abstract class LineBank : ILineBank<ILine>
 {
-    private int It { get; set; }
-    
-    private ILine[] Lines { get; set; }
-
-    public int Count => throw new NotImplementedException();
-
-    public bool IsReadOnly => throw new NotImplementedException();
-
-    public ILine this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-    //doesnt this mean it has to be transient? wont 
-    public LineBank(IParameterizedFactory<IEnumerable<ILine>> line,
-        IEnumerator<ILine> enumerator)
-    {
-
-    }
-    public LineBank(IParameterizedFactory<IEnumerable<ILine>> Existing)
-    {
-        
-    }
-    //this creates issues asf
-    //doesnt this mean it has to be transient?  
-    public LineBank(IParameterizedFactory<ILine> line)
-    {
-        
-    }
-    public LineBank()
-    {
-
-    }
-    public IEnumerator<ILine> GetEnumerator()
-    {
-        return (IEnumerator<ILine>)Lines.GetEnumerator();
-    }
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return Lines.GetEnumerator();
-    }
-
-    public int IndexOf(ILine item)
+    public LinkedList<ILine> Bank => throw new NotImplementedException();
+    public bool AdjustLine(int LineNumber, int len, char c)
     {
         throw new NotImplementedException();
     }
-
-    public void Insert(int index, ILine item)
+    public bool AppendtoLine(ILine Line, int len, char c)
     {
         throw new NotImplementedException();
     }
-
-    public void RemoveAt(int index)
+    public bool GetFirst(out ILine? item)
     {
         throw new NotImplementedException();
     }
-
-    public void Add(ILine item)
+    public bool GetLast(out ILine? item)
     {
         throw new NotImplementedException();
     }
-
-    public void Clear()
+    public bool GetLastest(out ILine? item)
     {
         throw new NotImplementedException();
     }
-
-    public bool Contains(ILine item)
+    public bool GetLine(int LineNumber, out ILine? item)
     {
         throw new NotImplementedException();
-    }
-
-    public void CopyTo(ILine[] array, int arrayIndex)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Remove(ILine item)
-    {
-        return false;
     }
 }

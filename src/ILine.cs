@@ -9,11 +9,14 @@ namespace Labyrinth.Composition.Interfaces;
 // ensure comparison homogenuity.....
 public interface ILine : IComparable<ILine>
 {
-    int LineStart { get; set; }
-    int LineEnd { get; set; }
+    int LineStart { get; }
+    int LineEnd { get; }
     int Len { get; }
-    char LastInsert { get; set; }
-    int LastInsertPosition { get; set; }
+    char LastInsert { get; }
+    int LastInsertPosition { get; }
+    bool AdjustStart(int len, char c, int lastIns);
+    bool AdjustLen(int len, char c, int lastIns);
+    IComparer<ILine> CompareBy { get; set; }
 
     static bool operator <(ILine b, ILine a) => (b.LineStart < a.LineStart);
     static bool operator >(ILine b, ILine a) => (b.LineStart > a.LineStart);

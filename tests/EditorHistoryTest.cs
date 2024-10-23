@@ -34,7 +34,8 @@ namespace tests
                         Space = ' ',
                         NewLine = '\n'
                     };
-                }));
+                }), 
+                );
             }).Create();
         }
         [TestMethod]
@@ -42,14 +43,6 @@ namespace tests
         {
             var writer = this.Writer;
 
-        }
-        [TestMethod]
-        public void LastInsert()
-        {
-            var writer = this.Writer;
-            StringBuilder sb = new();
-            sb = writer.InsertRight(8, sb);
-            writer.LastInsertion();
         }
     }
 }

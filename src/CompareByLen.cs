@@ -11,15 +11,3 @@ public class CompareByLen : ICompareLineByLen<ILine>
         return x!.Len - y!.Len;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

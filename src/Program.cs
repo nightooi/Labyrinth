@@ -36,9 +36,9 @@ builder.Services.AddTransient<IParameterizedFactory<ICoordinates>, ParamFactory<
         });
             
     });
-//builder.Services.AddSingleton<IParameterizedFactory<IMemento<IInsertion>>>((x) => {
-//    return new ParamFactory<IMemento<IInsertion>>(() => { })
-//})
+builder.Services.AddSingleton<IParameterizedFactory<IMemento<IInsertion>>>((x) => {
+    return new ParamFactory<IMemento<IInsertion>>(() => { })
+})
 
 builder.Services.AddSingleton<ISimpleFactory<Characters>, SimpleFactory<Characters>>(x => {
     //so how do i cast this to a type? 
