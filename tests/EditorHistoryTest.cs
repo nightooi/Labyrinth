@@ -11,8 +11,8 @@ namespace tests
     [TestClass]
     public class EditorHistoryTests
     {
-        private PathWriter Writer => CreateWriter();
-        private PathWriter CreateWriter()
+        private static PathWriter Writer => CreateWriter();
+        private static PathWriter CreateWriter()
         {
             return new SimpleFactory<PathWriter>(() =>
             {
@@ -34,14 +34,14 @@ namespace tests
                         Space = ' ',
                         NewLine = '\n'
                     };
-                }), 
+                }),
                 );
             }).Create();
         }
         [TestMethod]
         public void Restore()
         {
-            var writer = this.Writer;
+            var writer = Writer;
 
         }
     }

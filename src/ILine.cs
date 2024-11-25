@@ -14,23 +14,8 @@ public interface ILine : IComparable<ILine>
     int Len { get; }
     char LastInsert { get; }
     int LastInsertPosition { get; }
-    bool AdjustStart(int len, char c, int lastIns);
-    bool AdjustLen(int len, char c, int lastIns);
     IComparer<ILine> CompareBy { get; set; }
 
     static bool operator <(ILine b, ILine a) => (b.LineStart < a.LineStart);
     static bool operator >(ILine b, ILine a) => (b.LineStart > a.LineStart);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

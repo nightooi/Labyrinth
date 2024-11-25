@@ -44,16 +44,16 @@ public class PathWriter : IPathWriter, ICloneable
     public PathWriter(
         ISimpleFactory<GeneralPadding> padding,
         ISimpleFactory<Characters> car,
-        IParameterizedFactory<ILineBank> LineBank)
+        IParameterizedFactory<ILineBank<ILine>> LineBank)
     {
-        _generalPadding = padding.Create();
+        generalPadding = padding.Create();
         _chars = car.Create();
     }
     #endregion
-    private ILineBank LineBank { get; init; }
-    private GeneralPadding _generalPadding { get; set; }
-    private StringBuilder _currentPadding = new StringBuilder();
-    private Characters _chars;
+    private ILineBank<ILine> LineBank { get; init; }
+    private GeneralPadding generalPadding { get; set; }
+    private StringBuilder currentPadding = new ();
+    private readonly Characters _chars;
     private int MaxY { get 
         {
             return _maxY;
@@ -72,8 +72,8 @@ public class PathWriter : IPathWriter, ICloneable
             _lastY = value;
         }
     }
-    private int LastX => _generalPadding.PaddingX.Length 
-        + _currentPadding.Length;
+    private int LastX => generalPadding.PaddingX.Length 
+        + currentPadding.Length;
     private char PreviousInsert { get; set; }
     private enum Padding { Remove, Add };
     #region helpers
@@ -82,17 +82,16 @@ public class PathWriter : IPathWriter, ICloneable
         switch (pad)
         {
             case Padding.Remove:
-                if(_currentPadding.Length > 0) _currentPadding.Remove(_currentPadding.Length - 1, 1);
+                if(currentPadding.Length > 0) currentPadding.Remove(currentPadding.Length - 1, 1);
                 break;
             case Padding.Add:
-                _currentPadding.Append(_chars.Space);
+                currentPadding.Append(_chars.Space);
                 break;
         }
     }
     private int GetLocalCaretPos(in StringBuilder buffer)
     {
-        int Start;
-        FindLocalStart(buffer,out Start);
+        FindLocalStart(buffer,out int Start);
         return Start + LastX;
     }
     private int FindLocalStart(in StringBuilder write, out int Start)
@@ -116,7 +115,6 @@ public class PathWriter : IPathWriter, ICloneable
     public StringBuilder InsertDown(int len, StringBuilder field)
     {
         var f = field;
-        var Prev = GetLocalCaretPos(f)-1;
         bool right = false;
         if(PreviousInsert == _chars.Right)
         {
@@ -137,8 +135,7 @@ public class PathWriter : IPathWriter, ICloneable
             if(LastY+1 <= MaxY){
                 LastY++;
                 Console.WriteLine("Writing into {0}", LastY);
-                int start = 0;
-                int end = FindLocalStart(f, out start);
+                int end = FindLocalStart(f, out int start);
                 var lineLen = end - start -1;
                 if(lineLen < LastX)
                 {
@@ -154,7 +151,7 @@ public class PathWriter : IPathWriter, ICloneable
             {
                 LastY++;
                 f.Append(
-                    (_generalPadding.PaddingX + _currentPadding)
+                    (generalPadding.PaddingX + currentPadding)
                     +_chars.Down 
                     +"\r\n");
             }
@@ -174,7 +171,7 @@ public class PathWriter : IPathWriter, ICloneable
         Console.WriteLine("CaretPos in Left is:::: {0}, ",
               CaretPos);
         if (CaretPos > 0 && field[CaretPos] == '\r') {
-            CaretPos = CaretPos - 1;
+            CaretPos--;
             AdjustPadding(Padding.Remove);
         }
         var Traverse = new Func<StringBuilder>(
@@ -228,7 +225,7 @@ public class PathWriter : IPathWriter, ICloneable
         var write = field;
         if (CaretPos - 1 > 0 && field[CaretPos - 1] == _chars.Down)
         {
-            CaretPos = CaretPos - 1;
+            CaretPos--;
             AdjustPadding(Padding.Remove);
         }
         for (int i = 0; i < len; i++)
@@ -250,8 +247,7 @@ public class PathWriter : IPathWriter, ICloneable
     public StringBuilder InsertUp(int len, StringBuilder field)
     {
 
-        var cPos = GetLocalCaretPos(field);
-        bool downOverrider = false;
+        int cPos;
         if (PreviousInsert == _chars.Down)
         {
             AdjustPadding(Padding.Remove);
@@ -273,11 +269,9 @@ public class PathWriter : IPathWriter, ICloneable
             if (LastY-1 < 1) return field;
             LastY--;
             var caretpos = GetLocalCaretPos(field);
-            int LineStart = 0;
-            int LineEnd = FindLocalStart(field, out LineStart);
+            int LineEnd = FindLocalStart(field, out _);
             Console.WriteLine("Writing into {0}", LastY);
-            int start = 0;
-            int end = FindLocalStart(field, out start);
+            int end = FindLocalStart(field, out int start);
             var lineLen = end - start - 1;
             var diff = LastX - lineLen;
             if(lineLen < LastX && diff > 0)

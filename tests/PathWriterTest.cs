@@ -13,7 +13,7 @@ namespace tests
     public partial class PathWriterTest
     {
         private IPathWriter Writer => CreateWriter();
-        private PathWriter CreateWriter()
+        private static PathWriter CreateWriter()
         {
             return new SimpleFactory<PathWriter>(() =>
             {
@@ -64,7 +64,7 @@ namespace tests
                 }));
             });
             var a = j.Create();
-            StringBuilder b = new StringBuilder();
+            StringBuilder b = new();
             b.Append("\r\n").Append("\r\n");
             b = a.InsertDown(5, b);
             b = a.InsertUp(2, b);
@@ -82,7 +82,7 @@ namespace tests
             builder.Append("\r\n").Append("\r\n");
             var a = builder.ToString();
             Assert.IsTrue(a.Length == 4);
-            Assert.IsFalse(a.Contains("U"));
+            Assert.IsFalse(a.Contains('U'));
         }
         [TestMethod]
         [DataRow(8)]
@@ -90,7 +90,7 @@ namespace tests
         public void TestInsertRight(int value)
         {
             var write = Writer;
-            StringBuilder b = new StringBuilder();
+            StringBuilder b = new ();
             b.Append("\r\n").Append("\r\n");
             Assert.IsTrue(b[0] == '\r' && b[1] == '\n');
             Console.WriteLine(b.ToString() + " :::::::OUTPUTBEFORE");
@@ -190,7 +190,7 @@ namespace tests
         public void TestDown(int value)
         {
             var a = Writer;
-            StringBuilder b = new StringBuilder();
+            StringBuilder b = new ();
             b.Append("\r\n").Append("\r\n");
             b = a.InsertDown(value, b);
             var c = b.ToString();
@@ -213,7 +213,7 @@ namespace tests
         public void TestLeftDown(int value)
         {
             var a = Writer;
-            StringBuilder b = new StringBuilder();
+            StringBuilder b = new ();
             b.Append("\r\n").Append("\r\n");
             b = a.InsertLeft(value, b);
             b = a.InsertDown(value, b);
@@ -230,7 +230,7 @@ namespace tests
         public void TestSquare()
         {
             var path = Writer;
-            StringBuilder b = new StringBuilder();
+            StringBuilder b = new ();
             b.Append("\r\n").Append("\r\n");
             b = path.InsertRight(8, b);
             b = path.InsertDown(8, b);
@@ -255,7 +255,7 @@ namespace tests
         public void TestSquareTwo()
         {
             var a = Writer;
-            StringBuilder b = new StringBuilder();
+            StringBuilder b = new ();
             b.Append("\r\n").Append("\r\n");
             b = a.InsertDown(8, b);
             b = a.InsertRight(16, b);

@@ -4,12 +4,11 @@ using System.Runtime.CompilerServices;
 using System.Transactions;
 
 namespace Labyrinth.Composition;
-public class Line : ILine
+public class Line : IEditableLine
 {
     private enum ChangeLog { start, end }
-    private int _start;
-    private List<int> startChangeLog = new List<int>();
-    private List<int> EndChangeLog = new List<int>();
+    private List<int> startChangeLog = [];
+    private List<int> EndChangeLog = [];
     int _linestart, _lineEnd, _lastInsertPostition;
     char _lastInsert;
     public int LineStart { 
@@ -18,13 +17,14 @@ public class Line : ILine
             return _linestart;
         } 
     }
-    public int LineEnd { get 
+    public int LineEnd { get
         {
             ExecuteChangeLog();
             return _lineEnd;
         }
     }
     public char LastInsert { get => _lastInsert; }
+    
     public int Len => LineEnd - LineStart;
     public int LastInsertPosition { get => _lastInsertPostition; }
     public IComparer<ILine> CompareBy { get; set; }
@@ -47,6 +47,7 @@ public class Line : ILine
         _lastInsert = lastIns;
         _lastInsertPostition = insertPos;
         CompareBy = (comparer is null) ? standardCompare.Create() : comparer;
+
     }
     public int CompareTo(ILine? other)
     {
@@ -101,13 +102,11 @@ public class Line : ILine
     ///<summary>
     /// if len is negative and start - len is less than 0, returns false
     /// and does not perform operation.
-    /// 
     /// </summary>
     /// <param name="len"> total len of insertion, negative or positive</param>
     /// <param name="c"> the character inserted</param>
     /// <param name="lastIns">the last position of the insertion</param>
     /// <returns></returns>
-
     public bool AdjustLen(int len, char c, int lastIns)
     {
         var res = LineStart + len;

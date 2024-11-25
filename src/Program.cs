@@ -4,11 +4,7 @@ using Labyrinth.Composition.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
-using System.Collections;
-using System.Collections.Immutable;
 using System.Text;
-using System.Xml.Linq;
 ///****************************************************************
 /// 
 ///     Proj Def: 
@@ -36,10 +32,22 @@ builder.Services.AddTransient<IParameterizedFactory<ICoordinates>, ParamFactory<
         });
             
     });
-builder.Services.AddSingleton<IParameterizedFactory<IMemento<IInsertion>>>((x) => {
-    return new ParamFactory<IMemento<IInsertion>>(() => { })
-})
-
+//builder.Services.AddSingleton<IParameterizedFactory<IMemento<IInsertion>>>((x) => {
+//    return new ParamFactory<IMemento<IInsertion>>(() => { })
+//})
+builder.Services.AddTransient<ILineFactoryFacade>(
+    (ServiceP)=>{
+        var a =
+        ServiceP.GetRequiredService<ISimpleFactory<ICompareLineByStart<ILine>>>();
+    return new LineFact(a);
+});
+builder.Services.AddTransient<ISimpleFactory<ICompareLineByStart<ILine>>>(
+    (ServiceP) => {
+    return new SimpleFactory<ICompareLineByStart<ILine>>(() =>
+    {
+        return new ComparebyStart();
+    });
+});
 builder.Services.AddSingleton<ISimpleFactory<Characters>, SimpleFactory<Characters>>(x => {
     //so how do i cast this to a type? 
     return new SimpleFactory<Characters>(() =>
@@ -59,13 +67,9 @@ var items = builder.Services.BuildServiceProvider();
 var res = items.GetService<ISimpleFactory<Characters>>();
 
 
-public class testObject
+public class TestObject(ISimpleFactory<Characters> character)
 {
-    ISimpleFactory<Characters> charFactory;
-    public testObject(ISimpleFactory<Characters> character)
-    {
-        charFactory = character;
-    }
+    readonly ISimpleFactory<Characters> charFactory = character;
 
     public char ShowingChars()
     {
@@ -93,13 +97,9 @@ public interface ISimpleFactory<T>
 {
     public T Create();
 }
-public class SimpleFactory<T> : ISimpleFactory<T>
+public class SimpleFactory<T>(Func<T> implementation) : ISimpleFactory<T>
 {
-    public SimpleFactory(Func<T> implmentation)
-    {
-        _implementation = implmentation;
-    }
-    private Func<T> _implementation;
+    private readonly Func<T> _implementation = implementation;
     public T Create()
     {
         return _implementation.Invoke();
@@ -116,7 +116,7 @@ public interface IParameterizedFactory<T>
 }
 public class ParamFactory<T> : IParameterizedFactory<T>
 {
-    Func<object[], T> _implementation;
+    readonly Func<object[], T> _implementation;
     public T Create(params object[] items)
     {
         return _implementation.Invoke(items);

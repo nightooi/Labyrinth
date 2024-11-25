@@ -17,15 +17,25 @@ namespace tests
         IComparer<ILine>? Comparer { get; set; }
         int? start;
         int? end;
+        bool? bas;
 
-        private ILine CLine => CreateLine(start, end, Comparer);
+        private IEditableLine CLine => CreateLine(start, end, Comparer, bas);
 
-        private ILine CreateLine(
+        private static Line CreateLine(
             int? start,
             int? End,
-            IComparer<ILine>? line
+            IComparer<ILine>? line,
+            bool? bas
             )
         {
+            if (bas is not null && (bool)bas)
+            {
+                return new Line(null,
+                    new SimpleFactory<ICompareLineByStart<ILine>>(
+                        () => {
+                            return new ComparebyStart();
+                        }));
+            }
             return new Line(
                 ((start is null) ? 5 : (int)start),
                 ((End is null) ? 10 : (int)End),
@@ -41,19 +51,19 @@ namespace tests
         public void TestBaseComparison()
         {
             Assert.IsTrue(
-                CLine.CompareTo(CreateLine(4, null, null)) > 0);
+                CLine.CompareTo(CreateLine(4, null, null, null)) > 0);
         }
         [TestMethod]
         public void TestLenComparison()
         {
             this.Comparer = new CompareByLen();
-            Assert.IsFalse(CLine.CompareTo(CreateLine(4, 15, null)) > 0);
+            Assert.IsFalse(CLine.CompareTo(CreateLine(4, 15, null, null)) > 0);
         }
         [TestMethod]
         public void TestRedefinedComparison()
         {
-            CLine.CompareBy = (IComparable<ILine>)(new CompareByLen());
-            Assert.IsFalse(CLine.CompareTo(CreateLine(4, 15, null)) > 0);
+            CLine.CompareBy = new CompareByLen();
+            Assert.IsFalse(CLine.CompareTo(CreateLine(4, 15, null, null)) > 0);
         }
         [TestMethod]
         [DataRow(8)]
@@ -103,6 +113,12 @@ namespace tests
             var a = this.CLine;
             a.AdjustLen(row, 'U', 10);
             Assert.IsFalse(a.AdjustLen(row, 'L', 8));
+        }
+        [TestMethod]
+        public void TestEnd()
+        {
+            var a = CreateLine(null, null, Comparer, bas);
+            Assert.IsTrue(a.LineEnd >= a.LineStart);
         }
     }
 }
